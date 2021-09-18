@@ -14,7 +14,7 @@ import (
 )
 
 func main() {
-	q := traqchat.New(os.Getenv("BOT_ID"), os.Getenv("VERIFICATION_TOKEN"), true)
+	q := traqchat.New(os.Getenv("BOT_ID"), os.Getenv("ACCESS_TOKEN"), os.Getenv("VERIFICATION_TOKEN"), true)
 
 	q.Hear(`ping`, func(payload *traqchat.Payload) {
 		q.Reply(payload, "pong!")
@@ -22,4 +22,5 @@ func main() {
 
 	q.Start()
 }
+
 ```

@@ -15,6 +15,7 @@ import (
 
 type TraqChat struct {
 	ID                string // Bot uuid
+	AccessToken       string
 	VerificationToken string
 	Client            *traq.APIClient
 	Auth              context.Context
@@ -25,13 +26,14 @@ type TraqChat struct {
 
 type Payload traqbot.MessageCreatedPayload
 
-func New(id, token string, embed bool) *TraqChat {
+func New(id, at, vt string, embed bool) *TraqChat {
 	client := traq.NewAPIClient(traq.NewConfiguration())
 	auth := context.WithValue(context.Background(), traq.ContextAccessToken, token)
 
 	q := &TraqChat{
 		ID:                id,
-		VerificationToken: token,
+		AccessToken:       at,
+		VerificationToken: vt,
 		Client:            client,
 		Auth:              auth,
 		Handlers:          traqbot.EventHandlers{},
