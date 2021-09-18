@@ -85,7 +85,8 @@ func (q *TraqChat) Respond(restr string, f func(*Payload)) error {
 	return nil
 }
 
-func (q *TraqChat) Send(payload *Payload, content string) (traq.Message, error) {
+// TODO: 引数にq入れるのどうにかしたい
+func Send(q *TraqChat, payload *Payload, content string) (traq.Message, error) {
 	message, _, err := q.Client.MessageApi.PostMessage(q.Auth, payload.Message.ChannelID, &traq.MessageApiPostMessageOpts{
 		PostMessageRequest: optional.NewInterface(traq.PostMessageRequest{
 			Content: content,
@@ -102,7 +103,8 @@ func (q *TraqChat) Send(payload *Payload, content string) (traq.Message, error) 
 	return message, nil
 }
 
-func (q *TraqChat) Reply(payload *Payload, content string) (traq.Message, error) {
+// TODO: 引数にq入れるのどうにかしたい
+func Reply(q *TraqChat, payload *Payload, content string) (traq.Message, error) {
 	reply := fmt.Sprintf("@%s %s", payload.Message.User.Name, content)
 	message, _, err := q.Client.MessageApi.PostMessage(q.Auth, payload.Message.ChannelID, &traq.MessageApiPostMessageOpts{
 		PostMessageRequest: optional.NewInterface(traq.PostMessageRequest{

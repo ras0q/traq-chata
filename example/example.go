@@ -10,7 +10,7 @@ func main() {
 	q := traqchat.New(os.Getenv("BOT_ID"), os.Getenv("ACCESS_TOKEN"), os.Getenv("VERIFICATION_TOKEN"))
 
 	q.Hear(`ping`, func(payload *traqchat.Payload) {
-		q.Reply(payload, "pong!")
+		traqchat.Reply(q, payload, "pong!")
 	})
 
 	q.Start()
