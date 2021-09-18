@@ -38,10 +38,10 @@ func New(id, at, vt string) *TraqChat {
 		Matchers:          map[*regexp.Regexp]Pattern{},
 	}
 
-	q.Handlers.SetMessageCreatedHandler(func(payload *traqbot.MessageCreatedPayload) {
+	q.Handlers.SetMessageCreatedHandler(func(payload *Payload) {
 		for m, p := range q.Matchers {
 			if m.MatchString(payload.Message.Text) && p.CanExecute(payload, q.ID) {
-				p.Func(payload)
+				p.Func(q, payload)
 			}
 		}
 	})
@@ -49,7 +49,7 @@ func New(id, at, vt string) *TraqChat {
 	return q
 }
 
-func (q *TraqChat) Hear(restr string, f func(*Payload)) error {
+func (q *TraqChat) Hear(restr string, f func(*TraqChat, *Payload)) error {
 	re, err := regexp.Compile(restr)
 	if err != nil {
 		return err
@@ -67,7 +67,7 @@ func (q *TraqChat) Hear(restr string, f func(*Payload)) error {
 	return nil
 }
 
-func (q *TraqChat) Respond(restr string, f func(*Payload)) error {
+func (q *TraqChat) Respond(restr string, f func(*TraqChat, *Payload)) error {
 	re, err := regexp.Compile(restr)
 	if err != nil {
 		return err
