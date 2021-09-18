@@ -28,7 +28,7 @@ type Payload traqbot.MessageCreatedPayload
 
 func New(id, at, vt string, embed bool) *TraqChat {
 	client := traq.NewAPIClient(traq.NewConfiguration())
-	auth := context.WithValue(context.Background(), traq.ContextAccessToken, token)
+	auth := context.WithValue(context.Background(), traq.ContextAccessToken, at)
 
 	q := &TraqChat{
 		ID:                id,
