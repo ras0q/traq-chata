@@ -1,10 +1,3 @@
-# traq-chat
-
-Make creating traQBot more easy.
-
-## Example
-
-```go
 package example
 
 import (
@@ -22,4 +15,3 @@ func main() {
 
 	q.Start()
 }
-```
