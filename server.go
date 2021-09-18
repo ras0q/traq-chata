@@ -108,11 +108,7 @@ func (q *TraqChat) Send(payload *Payload, content string) (traq.Message, error) 
 }
 
 func (q *TraqChat) Reply(payload *Payload, content string) (traq.Message, error) {
-	reply := fmt.Sprintf(
-		"@%s\n@%s",
-		payload.Message.User.Name,
-		content,
-	)
+	reply := fmt.Sprintf("@%s %s", payload.Message.User.Name, content)
 	message, _, err := q.Client.MessageApi.PostMessage(q.Auth, payload.Message.ChannelID, &traq.MessageApiPostMessageOpts{
 		PostMessageRequest: optional.NewInterface(traq.PostMessageRequest{
 			Content: reply,
