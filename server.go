@@ -8,7 +8,6 @@ import (
 	"regexp"
 
 	"github.com/antihax/optional"
-	"github.com/jinzhu/copier"
 	traq "github.com/sapphi-red/go-traq"
 	traqbot "github.com/traPtitech/traq-bot"
 )
