@@ -1,6 +1,6 @@
 # traq-chat
 
-Make creating traQBot more easy.
+Make creating traQBot easier.
 
 ## Example
 
