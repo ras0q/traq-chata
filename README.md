@@ -5,7 +5,7 @@ Make creating traQBot more easy.
 ## Example
 
 ```go
-package example
+package main
 
 import (
 	"os"
