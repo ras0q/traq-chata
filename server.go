@@ -45,7 +45,7 @@ func New(id, at, vt string, embed bool) *TraqChat {
 			if m.MatchString(payload.Message.Text) && p.CanExecute(payload, q.ID) {
 				pl := Payload{}
 
-				copier.Copy(&pl, &payload)
+				copier.Copy(&pl, &payload) // TODO: もっといい方法を探す
 
 				p.Func(&pl)
 			}
@@ -73,7 +73,7 @@ func (q *TraqChat) Hear(restr string, f func(*Payload)) error {
 	return nil
 }
 
-func (q *TraqChat) Respond(restr string, f func(*traqbot.MessageCreatedPayload)) error {
+func (q *TraqChat) Respond(restr string, f func(*Payload)) error {
 	re, err := regexp.Compile(restr)
 	if err != nil {
 		return err
