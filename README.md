@@ -14,7 +14,8 @@ import (
 )
 
 func main() {
-	q := traqchat.New(os.Getenv("BOT_ID"), os.Getenv("ACCESS_TOKEN"), os.Getenv("VERIFICATION_TOKEN"), true)
+	// Note: メンション埋め込みは自動でオンになります
+	q := traqchat.New(os.Getenv("BOT_ID"), os.Getenv("ACCESS_TOKEN"), os.Getenv("VERIFICATION_TOKEN"))
 
 	q.Hear(`ping`, func(payload *traqchat.Payload) {
 		q.Reply(payload, "pong!")

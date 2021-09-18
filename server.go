@@ -21,12 +21,11 @@ type TraqChat struct {
 	Auth              context.Context
 	Handlers          traqbot.EventHandlers
 	Matchers          map[*regexp.Regexp]Pattern
-	Embed             bool
 }
 
 type Payload traqbot.MessageCreatedPayload
 
-func New(id, at, vt string, embed bool) *TraqChat {
+func New(id, at, vt string) *TraqChat {
 	client := traq.NewAPIClient(traq.NewConfiguration())
 	auth := context.WithValue(context.Background(), traq.ContextAccessToken, at)
 
@@ -38,7 +37,6 @@ func New(id, at, vt string, embed bool) *TraqChat {
 		Auth:              auth,
 		Handlers:          traqbot.EventHandlers{},
 		Matchers:          map[*regexp.Regexp]Pattern{},
-		Embed:             embed,
 	}
 
 	q.Handlers.SetMessageCreatedHandler(func(payload *traqbot.MessageCreatedPayload) {
@@ -96,7 +94,7 @@ func (q *TraqChat) Send(payload *Payload, content string) (traq.Message, error) 
 	message, _, err := q.Client.MessageApi.PostMessage(q.Auth, payload.Message.ChannelID, &traq.MessageApiPostMessageOpts{
 		PostMessageRequest: optional.NewInterface(traq.PostMessageRequest{
 			Content: content,
-			Embed:   q.Embed,
+			Embed:   true,
 		}),
 	})
 
@@ -111,15 +109,14 @@ func (q *TraqChat) Send(payload *Payload, content string) (traq.Message, error) 
 
 func (q *TraqChat) Reply(payload *Payload, content string) (traq.Message, error) {
 	reply := fmt.Sprintf(
-		"!{\"type\":\"user\",\"raw\":\"@%s\",\"id\":\"%s\"}\n%s",
+		"@%s\n@%s",
 		payload.Message.User.Name,
-		payload.Message.User.ID,
 		content,
 	)
 	message, _, err := q.Client.MessageApi.PostMessage(q.Auth, payload.Message.ChannelID, &traq.MessageApiPostMessageOpts{
 		PostMessageRequest: optional.NewInterface(traq.PostMessageRequest{
 			Content: reply,
-			Embed:   q.Embed,
+			Embed:   true,
 		}),
 	})
 
