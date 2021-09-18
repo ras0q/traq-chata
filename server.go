@@ -37,6 +37,7 @@ func New(id, at, vt string, embed bool) *TraqChat {
 		Client:            client,
 		Auth:              auth,
 		Handlers:          traqbot.EventHandlers{},
+		Matchers:          map[*regexp.Regexp]Pattern{},
 		Embed:             embed,
 	}
 
