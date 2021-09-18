@@ -23,7 +23,7 @@ type TraqChat struct {
 	Matchers          map[*regexp.Regexp]Pattern
 }
 
-type Payload traqbot.MessageCreatedPayload
+type Payload = traqbot.MessageCreatedPayload
 
 func New(id, at, vt string) *TraqChat {
 	client := traq.NewAPIClient(traq.NewConfiguration())
@@ -42,11 +42,7 @@ func New(id, at, vt string) *TraqChat {
 	q.Handlers.SetMessageCreatedHandler(func(payload *traqbot.MessageCreatedPayload) {
 		for m, p := range q.Matchers {
 			if m.MatchString(payload.Message.Text) && p.CanExecute(payload, q.ID) {
-				pl := Payload{}
-
-				copier.Copy(&pl, &payload) // TODO: もっといい方法を探す
-
-				p.Func(&pl)
+				p.Func(payload)
 			}
 		}
 	})
