@@ -22,7 +22,27 @@ type TraqChat struct {
 	Matchers          map[*regexp.Regexp]Pattern
 }
 
-type Payload = traqbot.MessageCreatedPayload
+type Payload struct {
+	traqbot.MessageCreatedPayload
+}
+
+type Res struct {
+	TraqChat
+	Payload
+}
+
+type ResFunc func(*Res)
+
+func newPayload(p traqbot.MessageCreatedPayload) Payload {
+	return Payload{p}
+}
+
+func newRes(c TraqChat, p Payload) *Res {
+	return &Res{
+		TraqChat: c,
+		Payload:  p,
+	}
+}
 
 func New(id, at, vt string) *TraqChat {
 	client := traq.NewAPIClient(traq.NewConfiguration())
@@ -38,10 +58,10 @@ func New(id, at, vt string) *TraqChat {
 		Matchers:          map[*regexp.Regexp]Pattern{},
 	}
 
-	q.Handlers.SetMessageCreatedHandler(func(payload *Payload) {
+	q.Handlers.SetMessageCreatedHandler(func(payload *traqbot.MessageCreatedPayload) {
 		for m, p := range q.Matchers {
 			if m.MatchString(payload.Message.Text) && p.CanExecute(payload, q.ID) {
-				p.Func(q, payload)
+				p.Func(newRes(*q, newPayload(*payload)))
 			}
 		}
 	})
@@ -49,7 +69,7 @@ func New(id, at, vt string) *TraqChat {
 	return q
 }
 
-func (q *TraqChat) Hear(restr string, f func(*TraqChat, *Payload)) error {
+func (q *TraqChat) Hear(restr string, f ResFunc) error {
 	re, err := regexp.Compile(restr)
 	if err != nil {
 		return err
@@ -67,7 +87,7 @@ func (q *TraqChat) Hear(restr string, f func(*TraqChat, *Payload)) error {
 	return nil
 }
 
-func (q *TraqChat) Respond(restr string, f func(*TraqChat, *Payload)) error {
+func (q *TraqChat) Respond(restr string, f ResFunc) error {
 	re, err := regexp.Compile(restr)
 	if err != nil {
 		return err
@@ -85,9 +105,13 @@ func (q *TraqChat) Respond(restr string, f func(*TraqChat, *Payload)) error {
 	return nil
 }
 
-// TODO: 引数にq入れるのどうにかしたい
-func Send(q *TraqChat, payload *Payload, content string) (traq.Message, error) {
-	message, _, err := q.Client.MessageApi.PostMessage(q.Auth, payload.Message.ChannelID, &traq.MessageApiPostMessageOpts{
+func (q *TraqChat) Start() {
+	server := traqbot.NewBotServer(q.VerificationToken, q.Handlers)
+	log.Fatal(server.ListenAndServe(":80"))
+}
+
+func (r *Res) Send(content string) (traq.Message, error) {
+	message, _, err := r.Client.MessageApi.PostMessage(r.Auth, r.Message.ChannelID, &traq.MessageApiPostMessageOpts{
 		PostMessageRequest: optional.NewInterface(traq.PostMessageRequest{
 			Content: content,
 			Embed:   true,
@@ -103,10 +127,9 @@ func Send(q *TraqChat, payload *Payload, content string) (traq.Message, error) {
 	return message, nil
 }
 
-// TODO: 引数にq入れるのどうにかしたい
-func Reply(q *TraqChat, payload *Payload, content string) (traq.Message, error) {
-	reply := fmt.Sprintf("@%s %s", payload.Message.User.Name, content)
-	message, _, err := q.Client.MessageApi.PostMessage(q.Auth, payload.Message.ChannelID, &traq.MessageApiPostMessageOpts{
+func (r *Res) Reply(content string) (traq.Message, error) {
+	reply := fmt.Sprintf("@%s %s", r.Message.User.Name, content)
+	message, _, err := r.Client.MessageApi.PostMessage(r.Auth, r.Message.ChannelID, &traq.MessageApiPostMessageOpts{
 		PostMessageRequest: optional.NewInterface(traq.PostMessageRequest{
 			Content: reply,
 			Embed:   true,
@@ -120,9 +143,4 @@ func Reply(q *TraqChat, payload *Payload, content string) (traq.Message, error) 
 	}
 
 	return message, nil
-}
-
-func (q *TraqChat) Start() {
-	server := traqbot.NewBotServer(q.VerificationToken, q.Handlers)
-	log.Fatal(server.ListenAndServe(":80"))
 }

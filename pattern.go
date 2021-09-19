@@ -3,7 +3,7 @@ package traqchat
 import traqbot "github.com/traPtitech/traq-bot"
 
 type Pattern struct {
-	Func        func(*TraqChat, *Payload)
+	Func        ResFunc
 	NeedMention bool
 }
 
