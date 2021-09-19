@@ -8,20 +8,30 @@ Make creating traQBot easier.
 package main
 
 import (
+	"fmt"
 	"os"
 
 	traqchat "github.com/Ras96/traq-chat"
 )
 
 func main() {
-	// Note: メンション埋め込みは自動でオンになります
 	q := traqchat.New(os.Getenv("BOT_ID"), os.Getenv("ACCESS_TOKEN"), os.Getenv("VERIFICATION_TOKEN"))
 
-	q.Hear(`ping`, func(q *traqchat.TraqChat, payload *traqchat.Payload) {
-		traqchat.Send(q, payload, "pong!")
+	q.Hear(`ping`, func(res *traqchat.Res) {
+		res.Send("pong!")
 	})
+
+	q.Respond(`Hello`, hello)
 
 	q.Start()
 }
 
+func hello(res *traqchat.Res) {
+	res.Reply(fmt.Sprintf("Hello, %s\n", res.Message.User.DisplayName))
+}
+
 ```
+
+## More Information for traQ Bot
+
+- [traPtitech/traq-bot: traQ BOT用Goライブラリ](https://github.com/traPtitech/traq-bot)
