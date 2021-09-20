@@ -15,8 +15,10 @@ func main() {
 		os.Getenv("BOTVERIFICATION_TOKEN"),
 	)
 
-	q.Hear(`ping`, func(res *traqchat.Res) {
+	q.Hear(`ping`, func(res *traqchat.Res) error {
 		res.Send("pong!")
+
+		return nil
 	})
 
 	q.Respond(`Hello`, hello)
@@ -24,6 +26,8 @@ func main() {
 	q.Start()
 }
 
-func hello(res *traqchat.Res) {
+func hello(res *traqchat.Res) error {
 	res.Reply(fmt.Sprintf("Hello, %s\n", res.Message.User.DisplayName))
+
+	return nil
 }

@@ -32,7 +32,7 @@ type Res struct {
 	Payload
 }
 
-type ResFunc func(*Res)
+type ResFunc = func(*Res) error
 
 func newPayload(p traqbot.MessageCreatedPayload) Payload {
 	return Payload{p}
