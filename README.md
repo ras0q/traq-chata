@@ -15,7 +15,12 @@ import (
 )
 
 func main() {
-	q := traqchat.New(os.Getenv("BOT_ID"), os.Getenv("ACCESS_TOKEN"), os.Getenv("VERIFICATION_TOKEN"))
+	q := traqchat.New(
+		os.Getenv("BOT_ID"),
+		os.Getenv("BOT_USER_ID"),
+		os.Getenv("BOT_ACCESS_TOKEN"),
+		os.Getenv("BOTVERIFICATION_TOKEN"),
+	)
 
 	q.Hear(`ping`, func(res *traqchat.Res) {
 		res.Send("pong!")
@@ -29,7 +34,6 @@ func main() {
 func hello(res *traqchat.Res) {
 	res.Reply(fmt.Sprintf("Hello, %s\n", res.Message.User.DisplayName))
 }
-
 ```
 
 ## More Information for traQ Bot

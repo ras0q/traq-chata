@@ -14,6 +14,7 @@ import (
 
 type TraqChat struct {
 	ID                string // Bot uuid
+	UserID            string // Bot user uuid
 	AccessToken       string
 	VerificationToken string
 	Client            *traq.APIClient
@@ -44,12 +45,13 @@ func newRes(c TraqChat, p Payload) *Res {
 	}
 }
 
-func New(id, at, vt string) *TraqChat {
+func New(id, uid, at, vt string) *TraqChat {
 	client := traq.NewAPIClient(traq.NewConfiguration())
 	auth := context.WithValue(context.Background(), traq.ContextAccessToken, at)
 
 	q := &TraqChat{
 		ID:                id,
+		UserID:            uid,
 		AccessToken:       at,
 		VerificationToken: vt,
 		Client:            client,
@@ -60,7 +62,7 @@ func New(id, at, vt string) *TraqChat {
 
 	q.Handlers.SetMessageCreatedHandler(func(payload *traqbot.MessageCreatedPayload) {
 		for m, p := range q.Matchers {
-			if m.MatchString(payload.Message.Text) && p.CanExecute(payload, q.ID) {
+			if m.MatchString(payload.Message.Text) && p.CanExecute(payload, q.UserID) {
 				p.Func(newRes(*q, newPayload(*payload)))
 			}
 		}

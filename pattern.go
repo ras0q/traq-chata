@@ -7,14 +7,14 @@ type Pattern struct {
 	NeedMention bool
 }
 
-func (q *Pattern) CanExecute(payload *traqbot.MessageCreatedPayload, id string) bool {
+func (q *Pattern) CanExecute(payload *traqbot.MessageCreatedPayload, uid string) bool {
 	if payload.Message.User.Bot {
 		return false
 	}
 
 	if q.NeedMention {
 		for _, v := range payload.Message.Embedded {
-			if v.Type == "user" && v.ID == id {
+			if v.Type == "user" && v.ID == uid {
 				return true
 			}
 		}
