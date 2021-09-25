@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"regexp"
 
 	traqchat "github.com/Ras96/traq-chat"
 )
@@ -15,13 +16,13 @@ func main() {
 		os.Getenv("BOTVERIFICATION_TOKEN"),
 	)
 
-	q.Hear(`ping`, func(res *traqchat.Res) error {
+	q.Hear(regexp.MustCompile(`ping`), func(res *traqchat.Res) error {
 		res.Send("pong!")
 
 		return nil
 	})
 
-	q.Respond(`Hello`, hello)
+	q.Respond(regexp.MustCompile(`Hello`), hello)
 
 	q.Start()
 }

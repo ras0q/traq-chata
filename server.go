@@ -71,12 +71,7 @@ func New(id, uid, at, vt string) *TraqChat {
 	return q
 }
 
-func (q *TraqChat) Hear(restr string, f ResFunc) error {
-	re, err := regexp.Compile(restr)
-	if err != nil {
-		return err
-	}
-
+func (q *TraqChat) Hear(re *regexp.Regexp, f ResFunc) error {
 	if _, ok := q.Matchers[re]; ok {
 		return errors.New("Already Exists")
 	}
@@ -89,12 +84,7 @@ func (q *TraqChat) Hear(restr string, f ResFunc) error {
 	return nil
 }
 
-func (q *TraqChat) Respond(restr string, f ResFunc) error {
-	re, err := regexp.Compile(restr)
-	if err != nil {
-		return err
-	}
-
+func (q *TraqChat) Respond(re *regexp.Regexp, f ResFunc) error {
 	if _, ok := q.Matchers[re]; ok {
 		return errors.New("Already Exists")
 	}
