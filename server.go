@@ -21,6 +21,7 @@ type TraqChat struct {
 	Auth              context.Context
 	Handlers          traqbot.EventHandlers
 	Matchers          map[*regexp.Regexp]Pattern
+	Stamps            map[string]string
 }
 
 type Payload struct {
@@ -49,6 +50,16 @@ func New(id, uid, at, vt string) *TraqChat {
 	client := traq.NewAPIClient(traq.NewConfiguration())
 	auth := context.WithValue(context.Background(), traq.ContextAccessToken, at)
 
+	stamps, _, err := client.StampApi.GetStamps(auth, &traq.StampApiGetStampsOpts{})
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	stampsMap := make(map[string]string)
+	for _, s := range stamps {
+		stampsMap[s.Name] = s.Id
+	}
+
 	q := &TraqChat{
 		ID:                id,
 		UserID:            uid,
@@ -58,6 +69,7 @@ func New(id, uid, at, vt string) *TraqChat {
 		Auth:              auth,
 		Handlers:          traqbot.EventHandlers{},
 		Matchers:          map[*regexp.Regexp]Pattern{},
+		Stamps:            stampsMap,
 	}
 
 	q.Handlers.SetMessageCreatedHandler(func(payload *traqbot.MessageCreatedPayload) {
@@ -109,7 +121,6 @@ func (r *Res) Send(content string) (traq.Message, error) {
 			Embed:   true,
 		}),
 	})
-
 	if err != nil {
 		log.Println(fmt.Errorf("failed to send a message: %w", err))
 
@@ -120,14 +131,12 @@ func (r *Res) Send(content string) (traq.Message, error) {
 }
 
 func (r *Res) Reply(content string) (traq.Message, error) {
-	reply := fmt.Sprintf("@%s %s", r.Message.User.Name, content)
 	message, _, err := r.Client.MessageApi.PostMessage(r.Auth, r.Message.ChannelID, &traq.MessageApiPostMessageOpts{
 		PostMessageRequest: optional.NewInterface(traq.PostMessageRequest{
-			Content: reply,
+			Content: fmt.Sprintf("@%s %s", r.Message.User.Name, content),
 			Embed:   true,
 		}),
 	})
-
 	if err != nil {
 		log.Println(fmt.Errorf("failed to reply a message: %w", err))
 
@@ -135,4 +144,20 @@ func (r *Res) Reply(content string) (traq.Message, error) {
 	}
 
 	return message, nil
+}
+
+func (r *Res) AddStamp(stampName string) error {
+	sid, ok := r.Stamps[stampName]
+	if !ok {
+		return fmt.Errorf("stamp \"%s\" not found", stampName)
+	}
+
+	_, err := r.Client.MessageApi.AddMessageStamp(r.Auth, r.Message.ID, sid, &traq.MessageApiAddMessageStampOpts{})
+	if err != nil {
+		log.Println(fmt.Errorf("failed to add a stamp: %w", err))
+
+		return err
+	}
+
+	return err
 }
