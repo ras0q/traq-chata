@@ -24,13 +24,18 @@ type TraqChat struct {
 	Stamps            map[string]string
 }
 
-type Payload struct {
-	traqbot.MessageCreatedPayload
+type Pattern struct {
+	Func        ResFunc
+	NeedMention bool
 }
 
 type Res struct {
 	TraqChat
 	Payload
+}
+
+type Payload struct {
+	traqbot.MessageCreatedPayload
 }
 
 type ResFunc = func(*Res) error
@@ -74,7 +79,7 @@ func New(id, uid, at, vt string) *TraqChat {
 
 	q.Handlers.SetMessageCreatedHandler(func(payload *traqbot.MessageCreatedPayload) {
 		for m, p := range q.Matchers {
-			if m.MatchString(payload.Message.Text) && p.CanExecute(payload, q.UserID) {
+			if m.MatchString(payload.Message.Text) && p.canExecute(payload, q.UserID) {
 				p.Func(newRes(*q, newPayload(*payload)))
 			}
 		}
@@ -160,4 +165,22 @@ func (r *Res) AddStamp(stampName string) error {
 	}
 
 	return err
+}
+
+func (q *Pattern) canExecute(payload *traqbot.MessageCreatedPayload, uid string) bool {
+	if payload.Message.User.Bot {
+		return false
+	}
+
+	if q.NeedMention {
+		for _, v := range payload.Message.Embedded {
+			if v.Type == "user" && v.ID == uid {
+				return true
+			}
+		}
+
+		return false
+	}
+
+	return true
 }
