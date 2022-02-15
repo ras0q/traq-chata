@@ -29,11 +29,11 @@ type TraqChat struct {
 }
 
 type pattern struct {
-	Func        ResFunc
+	Func        ResponseFunc
 	NeedMention bool
 }
 
-type Res struct {
+type Response struct {
 	tc TraqChat
 	Payload
 }
@@ -42,7 +42,7 @@ type Payload struct {
 	traqbot.MessageCreatedPayload
 }
 
-type ResFunc = func(*Res) error
+type ResponseFunc func(*Response) error
 
 func New(id uuid.UUID, uid uuid.UUID, at string, vt string) *TraqChat {
 	client := traq.NewAPIClient(traq.NewConfiguration())
@@ -74,7 +74,7 @@ func New(id uuid.UUID, uid uuid.UUID, at string, vt string) *TraqChat {
 	q.Handlers.SetMessageCreatedHandler(func(payload *traqbot.MessageCreatedPayload) {
 		for m, p := range q.Matchers {
 			if m.MatchString(payload.Message.Text) && p.canExecute(payload, q.UserID) {
-				if err := p.Func(&Res{
+				if err := p.Func(&Response{
 					tc:      *q,
 					Payload: Payload{*payload},
 				}); err != nil {
@@ -92,7 +92,7 @@ func (q *TraqChat) SetWriter(w io.Writer) {
 	q.Writer = w
 }
 
-func (q *TraqChat) Hear(re *regexp.Regexp, f ResFunc) error {
+func (q *TraqChat) Hear(re *regexp.Regexp, f ResponseFunc) error {
 	if _, ok := q.Matchers[re]; ok {
 		return errors.New("Already Exists")
 	}
@@ -105,7 +105,7 @@ func (q *TraqChat) Hear(re *regexp.Regexp, f ResFunc) error {
 	return nil
 }
 
-func (q *TraqChat) Respond(re *regexp.Regexp, f ResFunc) error {
+func (q *TraqChat) Respond(re *regexp.Regexp, f ResponseFunc) error {
 	if _, ok := q.Matchers[re]; ok {
 		return errors.New("Already Exists")
 	}
@@ -123,7 +123,7 @@ func (q *TraqChat) Start() {
 	log.Fatal(server.ListenAndServe(":80"))
 }
 
-func (r *Res) Send(content string) (traq.Message, error) {
+func (r *Response) Send(content string) (traq.Message, error) {
 	message, _, err := r.tc.Client.MessageApi.PostMessage(r.tc.Auth, r.Message.ChannelID, &traq.MessageApiPostMessageOpts{
 		PostMessageRequest: optional.NewInterface(traq.PostMessageRequest{
 			Content: content,
@@ -139,7 +139,7 @@ func (r *Res) Send(content string) (traq.Message, error) {
 	return message, nil
 }
 
-func (r *Res) Reply(content string) (traq.Message, error) {
+func (r *Response) Reply(content string) (traq.Message, error) {
 	message, _, err := r.tc.Client.MessageApi.PostMessage(r.tc.Auth, r.Message.ChannelID, &traq.MessageApiPostMessageOpts{
 		PostMessageRequest: optional.NewInterface(traq.PostMessageRequest{
 			Content: fmt.Sprintf("@%s %s", r.Message.User.Name, content),
@@ -155,7 +155,7 @@ func (r *Res) Reply(content string) (traq.Message, error) {
 	return message, nil
 }
 
-func (r *Res) AddStamp(stampName string) error {
+func (r *Response) AddStamp(stampName string) error {
 	sid, ok := r.tc.Stamps[stampName]
 	if !ok {
 		return fmt.Errorf("stamp \"%s\" not found", stampName)
