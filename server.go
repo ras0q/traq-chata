@@ -31,7 +31,7 @@ type pattern struct {
 }
 
 type Res struct {
-	TraqChat
+	tc TraqChat
 	Payload
 }
 
@@ -46,10 +46,7 @@ func newPayload(p traqbot.MessageCreatedPayload) Payload {
 }
 
 func newRes(c TraqChat, p Payload) *Res {
-	return &Res{
-		TraqChat: c,
-		Payload:  p,
-	}
+	return &Res{c, p}
 }
 
 func New(id uuid.UUID, uid uuid.UUID, at string, vt string) *TraqChat {
@@ -121,7 +118,7 @@ func (q *TraqChat) Start() {
 }
 
 func (r *Res) Send(content string) (traq.Message, error) {
-	message, _, err := r.Client.MessageApi.PostMessage(r.Auth, r.Message.ChannelID, &traq.MessageApiPostMessageOpts{
+	message, _, err := r.tc.Client.MessageApi.PostMessage(r.tc.Auth, r.Message.ChannelID, &traq.MessageApiPostMessageOpts{
 		PostMessageRequest: optional.NewInterface(traq.PostMessageRequest{
 			Content: content,
 			Embed:   true,
@@ -137,7 +134,7 @@ func (r *Res) Send(content string) (traq.Message, error) {
 }
 
 func (r *Res) Reply(content string) (traq.Message, error) {
-	message, _, err := r.Client.MessageApi.PostMessage(r.Auth, r.Message.ChannelID, &traq.MessageApiPostMessageOpts{
+	message, _, err := r.tc.Client.MessageApi.PostMessage(r.tc.Auth, r.Message.ChannelID, &traq.MessageApiPostMessageOpts{
 		PostMessageRequest: optional.NewInterface(traq.PostMessageRequest{
 			Content: fmt.Sprintf("@%s %s", r.Message.User.Name, content),
 			Embed:   true,
@@ -153,12 +150,12 @@ func (r *Res) Reply(content string) (traq.Message, error) {
 }
 
 func (r *Res) AddStamp(stampName string) error {
-	sid, ok := r.Stamps[stampName]
+	sid, ok := r.tc.Stamps[stampName]
 	if !ok {
 		return fmt.Errorf("stamp \"%s\" not found", stampName)
 	}
 
-	_, err := r.Client.MessageApi.AddMessageStamp(r.Auth, r.Message.ID, sid, &traq.MessageApiAddMessageStampOpts{})
+	_, err := r.tc.Client.MessageApi.AddMessageStamp(r.tc.Auth, r.Message.ID, sid, &traq.MessageApiAddMessageStampOpts{})
 	if err != nil {
 		log.Println(fmt.Errorf("failed to add a stamp: %w", err))
 
