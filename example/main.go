@@ -6,12 +6,13 @@ import (
 	"regexp"
 
 	traqchat "github.com/Ras96/traq-chat"
+	"github.com/gofrs/uuid"
 )
 
 func main() {
 	q := traqchat.New(
-		os.Getenv("BOT_ID"),
-		os.Getenv("BOT_USER_ID"),
+		uuid.FromStringOrNil(os.Getenv("BOT_ID")),
+		uuid.FromStringOrNil(os.Getenv("BOT_USER_ID")),
 		os.Getenv("BOT_ACCESS_TOKEN"),
 		os.Getenv("BOTVERIFICATION_TOKEN"),
 	)

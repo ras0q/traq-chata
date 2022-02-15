@@ -4,6 +4,7 @@ go 1.17
 
 require (
 	github.com/antihax/optional v0.0.0-20180407024304-ca021399b1a6
+	github.com/gofrs/uuid v4.2.0+incompatible
 	github.com/sapphi-red/go-traq v0.0.0-20210619185243-f487eb63bd8c
 	github.com/traPtitech/traq-bot v1.0.2
 )

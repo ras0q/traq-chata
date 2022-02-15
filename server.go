@@ -8,13 +8,14 @@ import (
 	"regexp"
 
 	"github.com/antihax/optional"
+	"github.com/gofrs/uuid"
 	traq "github.com/sapphi-red/go-traq"
 	traqbot "github.com/traPtitech/traq-bot"
 )
 
 type TraqChat struct {
-	ID                string // Bot uuid
-	UserID            string // Bot user uuid
+	ID                uuid.UUID // Bot uuid
+	UserID            uuid.UUID // Bot user uuid
 	AccessToken       string
 	VerificationToken string
 	Client            *traq.APIClient
@@ -51,7 +52,7 @@ func newRes(c TraqChat, p Payload) *Res {
 	}
 }
 
-func New(id, uid, at, vt string) *TraqChat {
+func New(id uuid.UUID, uid uuid.UUID, at string, vt string) *TraqChat {
 	client := traq.NewAPIClient(traq.NewConfiguration())
 	auth := context.WithValue(context.Background(), traq.ContextAccessToken, at)
 
@@ -167,14 +168,14 @@ func (r *Res) AddStamp(stampName string) error {
 	return err
 }
 
-func (q *Pattern) canExecute(payload *traqbot.MessageCreatedPayload, uid string) bool {
+func (q *Pattern) canExecute(payload *traqbot.MessageCreatedPayload, uid uuid.UUID) bool {
 	if payload.Message.User.Bot {
 		return false
 	}
 
 	if q.NeedMention {
 		for _, v := range payload.Message.Embedded {
-			if v.Type == "user" && v.ID == uid {
+			if v.Type == "user" && v.ID == uid.String() {
 				return true
 			}
 		}
