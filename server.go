@@ -49,6 +49,9 @@ type (
 
 	// Response function
 	ResponseFunc func(*Response) error
+
+	// Response function
+	MustResponseFunc func(*Response)
 )
 
 func New(id uuid.UUID, uid uuid.UUID, at string, vt string) *TraqChat {
@@ -122,6 +125,18 @@ func (q *TraqChat) Hear(re *regexp.Regexp, f ResponseFunc) error {
 	return nil
 }
 
+func (q *TraqChat) HearF(re *regexp.Regexp, f MustResponseFunc) error {
+	if err := q.Hear(re, func(r *Response) error {
+		f(r)
+
+		return nil
+	}); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (q *TraqChat) Respond(re *regexp.Regexp, f ResponseFunc) error {
 	if _, ok := q.Matchers[re]; ok {
 		return errors.New("Already Exists")
@@ -130,6 +145,18 @@ func (q *TraqChat) Respond(re *regexp.Regexp, f ResponseFunc) error {
 	q.Matchers[re] = pattern{
 		Func:        f,
 		NeedMention: true,
+	}
+
+	return nil
+}
+
+func (q *TraqChat) RespondF(re *regexp.Regexp, f MustResponseFunc) error {
+	if err := q.Respond(re, func(r *Response) error {
+		f(r)
+
+		return nil
+	}); err != nil {
+		return err
 	}
 
 	return nil
