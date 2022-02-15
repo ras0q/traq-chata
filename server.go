@@ -15,34 +15,41 @@ import (
 	traqbot "github.com/traPtitech/traq-bot"
 )
 
-type TraqChat struct {
-	ID                uuid.UUID // Bot uuid
-	UserID            uuid.UUID // Bot user uuid
-	AccessToken       string
-	VerificationToken string
-	Client            *traq.APIClient
-	Auth              context.Context
-	Writer            io.Writer
-	Handlers          traqbot.EventHandlers
-	Matchers          map[*regexp.Regexp]pattern
-	Stamps            map[string]string
-}
+type (
+	// Configuration of the bot
+	TraqChat struct {
+		ID                uuid.UUID // Bot uuid
+		UserID            uuid.UUID // Bot user uuid
+		AccessToken       string
+		VerificationToken string
+		Client            *traq.APIClient
+		Auth              context.Context
+		Writer            io.Writer
+		Handlers          traqbot.EventHandlers
+		Matchers          map[*regexp.Regexp]pattern
+		Stamps            map[string]string
+	}
 
-type pattern struct {
-	Func        ResponseFunc
-	NeedMention bool
-}
+	// Match pattern
+	pattern struct {
+		Func        ResponseFunc
+		NeedMention bool
+	}
 
-type Response struct {
-	tc TraqChat
-	Payload
-}
+	// Response Information
+	Response struct {
+		tc TraqChat
+		Payload
+	}
 
-type Payload struct {
-	traqbot.MessageCreatedPayload
-}
+	// Wrapper for traqbot.MessageCreatedPayload
+	Payload struct {
+		traqbot.MessageCreatedPayload
+	}
 
-type ResponseFunc func(*Response) error
+	// Response function
+	ResponseFunc func(*Response) error
+)
 
 func New(id uuid.UUID, uid uuid.UUID, at string, vt string) *TraqChat {
 	client := traq.NewAPIClient(traq.NewConfiguration())
@@ -87,6 +94,16 @@ func New(id uuid.UUID, uid uuid.UUID, at string, vt string) *TraqChat {
 	return q
 }
 
+func NewAndStart(id uuid.UUID, uid uuid.UUID, at string, vt string) {
+	q := New(id, uid, at, vt)
+	q.Start()
+}
+
+func (q *TraqChat) Start() {
+	server := traqbot.NewBotServer(q.VerificationToken, q.Handlers)
+	log.Fatal(server.ListenAndServe(":80"))
+}
+
 func (q *TraqChat) SetWriter(w io.Writer) {
 	// Default writer is os.Stdout
 	q.Writer = w
@@ -116,11 +133,6 @@ func (q *TraqChat) Respond(re *regexp.Regexp, f ResponseFunc) error {
 	}
 
 	return nil
-}
-
-func (q *TraqChat) Start() {
-	server := traqbot.NewBotServer(q.VerificationToken, q.Handlers)
-	log.Fatal(server.ListenAndServe(":80"))
 }
 
 func (r *Response) Send(content string) (traq.Message, error) {
