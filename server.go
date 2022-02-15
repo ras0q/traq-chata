@@ -21,11 +21,11 @@ type TraqChat struct {
 	Client            *traq.APIClient
 	Auth              context.Context
 	Handlers          traqbot.EventHandlers
-	Matchers          map[*regexp.Regexp]Pattern
+	Matchers          map[*regexp.Regexp]pattern
 	Stamps            map[string]string
 }
 
-type Pattern struct {
+type pattern struct {
 	Func        ResFunc
 	NeedMention bool
 }
@@ -74,7 +74,7 @@ func New(id uuid.UUID, uid uuid.UUID, at string, vt string) *TraqChat {
 		Client:            client,
 		Auth:              auth,
 		Handlers:          traqbot.EventHandlers{},
-		Matchers:          map[*regexp.Regexp]Pattern{},
+		Matchers:          map[*regexp.Regexp]pattern{},
 		Stamps:            stampsMap,
 	}
 
@@ -94,7 +94,7 @@ func (q *TraqChat) Hear(re *regexp.Regexp, f ResFunc) error {
 		return errors.New("Already Exists")
 	}
 
-	q.Matchers[re] = Pattern{
+	q.Matchers[re] = pattern{
 		Func:        f,
 		NeedMention: false,
 	}
@@ -107,7 +107,7 @@ func (q *TraqChat) Respond(re *regexp.Regexp, f ResFunc) error {
 		return errors.New("Already Exists")
 	}
 
-	q.Matchers[re] = Pattern{
+	q.Matchers[re] = pattern{
 		Func:        f,
 		NeedMention: true,
 	}
@@ -168,7 +168,7 @@ func (r *Res) AddStamp(stampName string) error {
 	return err
 }
 
-func (q *Pattern) canExecute(payload *traqbot.MessageCreatedPayload, uid uuid.UUID) bool {
+func (q *pattern) canExecute(payload *traqbot.MessageCreatedPayload, uid uuid.UUID) bool {
 	if payload.Message.User.Bot {
 		return false
 	}
