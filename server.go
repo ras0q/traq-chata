@@ -4,7 +4,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"io"
 	"log"
+	"os"
 	"regexp"
 
 	"github.com/antihax/optional"
@@ -20,6 +22,7 @@ type TraqChat struct {
 	VerificationToken string
 	Client            *traq.APIClient
 	Auth              context.Context
+	Writer            io.Writer
 	Handlers          traqbot.EventHandlers
 	Matchers          map[*regexp.Regexp]pattern
 	Stamps            map[string]string
@@ -62,6 +65,7 @@ func New(id uuid.UUID, uid uuid.UUID, at string, vt string) *TraqChat {
 		VerificationToken: vt,
 		Client:            client,
 		Auth:              auth,
+		Writer:            os.Stdout,
 		Handlers:          traqbot.EventHandlers{},
 		Matchers:          map[*regexp.Regexp]pattern{},
 		Stamps:            stampsMap,
@@ -70,15 +74,22 @@ func New(id uuid.UUID, uid uuid.UUID, at string, vt string) *TraqChat {
 	q.Handlers.SetMessageCreatedHandler(func(payload *traqbot.MessageCreatedPayload) {
 		for m, p := range q.Matchers {
 			if m.MatchString(payload.Message.Text) && p.canExecute(payload, q.UserID) {
-				p.Func(&Res{
+				if err := p.Func(&Res{
 					tc:      *q,
 					Payload: Payload{*payload},
-				})
+				}); err != nil {
+					fmt.Fprintln(q.Writer, err.Error())
+				}
 			}
 		}
 	})
 
 	return q
+}
+
+func (q *TraqChat) SetWriter(w io.Writer) {
+	// Default writer is os.Stdout
+	q.Writer = w
 }
 
 func (q *TraqChat) Hear(re *regexp.Regexp, f ResFunc) error {
