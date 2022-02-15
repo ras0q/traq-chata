@@ -41,14 +41,6 @@ type Payload struct {
 
 type ResFunc = func(*Res) error
 
-func newPayload(p traqbot.MessageCreatedPayload) Payload {
-	return Payload{p}
-}
-
-func newRes(c TraqChat, p Payload) *Res {
-	return &Res{c, p}
-}
-
 func New(id uuid.UUID, uid uuid.UUID, at string, vt string) *TraqChat {
 	client := traq.NewAPIClient(traq.NewConfiguration())
 	auth := context.WithValue(context.Background(), traq.ContextAccessToken, at)
@@ -78,7 +70,10 @@ func New(id uuid.UUID, uid uuid.UUID, at string, vt string) *TraqChat {
 	q.Handlers.SetMessageCreatedHandler(func(payload *traqbot.MessageCreatedPayload) {
 		for m, p := range q.Matchers {
 			if m.MatchString(payload.Message.Text) && p.canExecute(payload, q.UserID) {
-				p.Func(newRes(*q, newPayload(*payload)))
+				p.Func(&Res{
+					tc:      *q,
+					Payload: Payload{*payload},
+				})
 			}
 		}
 	})
