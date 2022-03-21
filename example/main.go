@@ -13,7 +13,7 @@ func main() {
 		os.Getenv("BOT_ID"),
 		os.Getenv("BOT_USER_ID"),
 		os.Getenv("BOT_ACCESS_TOKEN"),
-		os.Getenv("BOTVERIFICATION_TOKEN"),
+		os.Getenv("BOT_VERIFICATION_TOKEN"),
 	)
 
 	q.Hear(regexp.MustCompile(`ping`), func(res *traqchat.Response) error {
