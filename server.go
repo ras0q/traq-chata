@@ -97,14 +97,14 @@ func New(id string, uid string, at string, vt string) *TraqChat {
 	return q
 }
 
-func NewAndStart(id string, uid string, at string, vt string) {
+func NewAndStart(id string, uid string, at string, vt string, port int) {
 	q := New(id, uid, at, vt)
-	q.Start()
+	q.Start(port)
 }
 
-func (q *TraqChat) Start() {
+func (q *TraqChat) Start(port int) {
 	server := traqbot.NewBotServer(q.VerificationToken, q.Handlers)
-	log.Fatal(server.ListenAndServe(":80"))
+	log.Fatal(server.ListenAndServe(fmt.Sprintf(":%d", port)))
 }
 
 func (q *TraqChat) SetWriter(w io.Writer) {

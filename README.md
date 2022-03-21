@@ -31,7 +31,7 @@ func main() {
 
         q.Respond(regexp.MustCompile(`Hello`), hello)
 
-        q.Start()
+        q.Start(80)
 }
 
 func hello(res *traqchat.Response) error {
