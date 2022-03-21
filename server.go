@@ -54,7 +54,7 @@ type (
 	MustResponseFunc func(*Response)
 )
 
-func New(id uuid.UUID, uid uuid.UUID, at string, vt string) *TraqChat {
+func New(id string, uid string, at string, vt string) *TraqChat {
 	client := traq.NewAPIClient(traq.NewConfiguration())
 	auth := context.WithValue(context.Background(), traq.ContextAccessToken, at)
 
@@ -69,8 +69,8 @@ func New(id uuid.UUID, uid uuid.UUID, at string, vt string) *TraqChat {
 	}
 
 	q := &TraqChat{
-		ID:                id,
-		UserID:            uid,
+		ID:                uuid.FromStringOrNil(id),
+		UserID:            uuid.FromStringOrNil(uid),
 		AccessToken:       at,
 		VerificationToken: vt,
 		Client:            client,
@@ -97,7 +97,7 @@ func New(id uuid.UUID, uid uuid.UUID, at string, vt string) *TraqChat {
 	return q
 }
 
-func NewAndStart(id uuid.UUID, uid uuid.UUID, at string, vt string) {
+func NewAndStart(id string, uid string, at string, vt string) {
 	q := New(id, uid, at, vt)
 	q.Start()
 }
