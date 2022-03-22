@@ -3,7 +3,6 @@ module github.com/Ras96/traq-chat
 go 1.17
 
 require (
-	github.com/gofrs/uuid v4.2.0+incompatible
 	github.com/traPtitech/go-traq v0.0.0-20220321203555-2c7a5f9aa48e
 	github.com/traPtitech/traq-bot v1.0.2
 )

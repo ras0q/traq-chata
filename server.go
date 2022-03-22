@@ -9,7 +9,6 @@ import (
 	"os"
 	"regexp"
 
-	"github.com/gofrs/uuid"
 	traq "github.com/traPtitech/go-traq"
 	traqbot "github.com/traPtitech/traq-bot"
 )
@@ -19,8 +18,8 @@ var embedTrue = true
 type (
 	// Configuration of the bot
 	TraqChat struct {
-		ID                uuid.UUID // Bot uuid
-		UserID            uuid.UUID // Bot user uuid
+		ID                string // Bot uuid
+		UserID            string // Bot user uuid
 		AccessToken       string
 		VerificationToken string
 		Client            *traq.APIClient
@@ -72,8 +71,8 @@ func New(id string, uid string, at string, vt string) *TraqChat {
 	}
 
 	q := &TraqChat{
-		ID:                uuid.FromStringOrNil(id),
-		UserID:            uuid.FromStringOrNil(uid),
+		ID:                id,
+		UserID:            uid,
 		AccessToken:       at,
 		VerificationToken: vt,
 		Client:            client,
@@ -217,14 +216,14 @@ func (r *Response) AddStamp(stampName string) error {
 	return err
 }
 
-func (q *pattern) canExecute(payload *traqbot.MessageCreatedPayload, uid uuid.UUID) bool {
+func (q *pattern) canExecute(payload *traqbot.MessageCreatedPayload, uid string) bool {
 	if payload.Message.User.Bot {
 		return false
 	}
 
 	if q.NeedMention {
 		for _, v := range payload.Message.Embedded {
-			if v.Type == "user" && v.ID == uid.String() {
+			if v.Type == "user" && v.ID == uid {
 				return true
 			}
 		}
