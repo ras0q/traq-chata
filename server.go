@@ -18,22 +18,24 @@ var embedTrue = true
 type (
 	// Configuration of the bot
 	TraqChat struct {
-		ID                string // Bot uuid
-		UserID            string // Bot user uuid
-		AccessToken       string
-		VerificationToken string
-		Client            *traq.APIClient
-		Auth              context.Context
-		Writer            io.Writer
-		Handlers          traqbot.EventHandlers
-		Matchers          map[*regexp.Regexp]pattern
-		Stamps            map[string]string
+		id                string // Bot uuid
+		userID            string // Bot user uuid
+		accessToken       string
+		verificationToken string
+		writer            io.Writer
+		handlers          traqbot.EventHandlers
+		matchers          map[*regexp.Regexp]pattern
+		stamps            map[string]string
+
+		// Wrapper for traPtitech/go-traq
+		Client *traq.APIClient
+		Auth   context.Context
 	}
 
 	// Match pattern
 	pattern struct {
-		Func        ResponseFunc
-		NeedMention bool
+		responseFunc ResponseFunc
+		needMention  bool
 	}
 
 	// Response Information
@@ -71,26 +73,26 @@ func New(id string, uid string, at string, vt string) *TraqChat {
 	}
 
 	q := &TraqChat{
-		ID:                id,
-		UserID:            uid,
-		AccessToken:       at,
-		VerificationToken: vt,
+		id:                id,
+		userID:            uid,
+		accessToken:       at,
+		verificationToken: vt,
+		writer:            os.Stdout,
+		handlers:          traqbot.EventHandlers{},
+		matchers:          map[*regexp.Regexp]pattern{},
+		stamps:            stampsMap,
 		Client:            client,
 		Auth:              auth,
-		Writer:            os.Stdout,
-		Handlers:          traqbot.EventHandlers{},
-		Matchers:          map[*regexp.Regexp]pattern{},
-		Stamps:            stampsMap,
 	}
 
-	q.Handlers.SetMessageCreatedHandler(func(payload *traqbot.MessageCreatedPayload) {
-		for m, p := range q.Matchers {
-			if m.MatchString(payload.Message.Text) && p.canExecute(payload, q.UserID) {
-				if err := p.Func(&Response{
+	q.handlers.SetMessageCreatedHandler(func(payload *traqbot.MessageCreatedPayload) {
+		for m, p := range q.matchers {
+			if m.MatchString(payload.Message.Text) && p.canExecute(payload, q.userID) {
+				if err := p.responseFunc(&Response{
 					tc:      *q,
 					Payload: Payload{*payload},
 				}); err != nil {
-					fmt.Fprintln(q.Writer, err.Error())
+					fmt.Fprintln(q.writer, err.Error())
 				}
 			}
 		}
@@ -105,23 +107,23 @@ func NewAndStart(id string, uid string, at string, vt string, port int) {
 }
 
 func (q *TraqChat) Start(port int) {
-	server := traqbot.NewBotServer(q.VerificationToken, q.Handlers)
+	server := traqbot.NewBotServer(q.verificationToken, q.handlers)
 	log.Fatal(server.ListenAndServe(fmt.Sprintf(":%d", port)))
 }
 
 func (q *TraqChat) SetWriter(w io.Writer) {
 	// Default writer is os.Stdout
-	q.Writer = w
+	q.writer = w
 }
 
 func (q *TraqChat) Hear(re *regexp.Regexp, f ResponseFunc) error {
-	if _, ok := q.Matchers[re]; ok {
+	if _, ok := q.matchers[re]; ok {
 		return errors.New("Already Exists")
 	}
 
-	q.Matchers[re] = pattern{
-		Func:        f,
-		NeedMention: false,
+	q.matchers[re] = pattern{
+		responseFunc: f,
+		needMention:  false,
 	}
 
 	return nil
@@ -140,13 +142,13 @@ func (q *TraqChat) HearF(re *regexp.Regexp, f MustResponseFunc) error {
 }
 
 func (q *TraqChat) Respond(re *regexp.Regexp, f ResponseFunc) error {
-	if _, ok := q.Matchers[re]; ok {
+	if _, ok := q.matchers[re]; ok {
 		return errors.New("Already Exists")
 	}
 
-	q.Matchers[re] = pattern{
-		Func:        f,
-		NeedMention: true,
+	q.matchers[re] = pattern{
+		responseFunc: f,
+		needMention:  true,
 	}
 
 	return nil
@@ -199,7 +201,7 @@ func (r *Response) Reply(content string) (*traq.Message, error) {
 }
 
 func (r *Response) AddStamp(stampName string) error {
-	sid, ok := r.tc.Stamps[stampName]
+	sid, ok := r.tc.stamps[stampName]
 	if !ok {
 		return fmt.Errorf("stamp \"%s\" not found", stampName)
 	}
@@ -221,7 +223,7 @@ func (q *pattern) canExecute(payload *traqbot.MessageCreatedPayload, uid string)
 		return false
 	}
 
-	if q.NeedMention {
+	if q.needMention {
 		for _, v := range payload.Message.Embedded {
 			if v.Type == "user" && v.ID == uid {
 				return true
