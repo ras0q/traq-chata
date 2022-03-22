@@ -3,9 +3,8 @@ module github.com/Ras96/traq-chat
 go 1.17
 
 require (
-	github.com/antihax/optional v1.0.0
 	github.com/gofrs/uuid v4.2.0+incompatible
-	github.com/sapphi-red/go-traq v0.0.0-20210619185243-f487eb63bd8c
+	github.com/traPtitech/go-traq v0.0.0-20220321203555-2c7a5f9aa48e
 	github.com/traPtitech/traq-bot v1.0.2
 )
 

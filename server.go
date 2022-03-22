@@ -9,11 +9,12 @@ import (
 	"os"
 	"regexp"
 
-	"github.com/antihax/optional"
 	"github.com/gofrs/uuid"
-	traq "github.com/sapphi-red/go-traq"
+	traq "github.com/traPtitech/go-traq"
 	traqbot "github.com/traPtitech/traq-bot"
 )
+
+var embedTrue = true
 
 type (
 	// Configuration of the bot
@@ -58,7 +59,9 @@ func New(id string, uid string, at string, vt string) *TraqChat {
 	client := traq.NewAPIClient(traq.NewConfiguration())
 	auth := context.WithValue(context.Background(), traq.ContextAccessToken, at)
 
-	stamps, _, err := client.StampApi.GetStamps(auth, &traq.StampApiGetStampsOpts{})
+	stamps, _, err := client.StampApi.
+		GetStamps(auth).
+		Execute()
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -162,33 +165,35 @@ func (q *TraqChat) RespondF(re *regexp.Regexp, f MustResponseFunc) error {
 	return nil
 }
 
-func (r *Response) Send(content string) (traq.Message, error) {
-	message, _, err := r.tc.Client.MessageApi.PostMessage(r.tc.Auth, r.Message.ChannelID, &traq.MessageApiPostMessageOpts{
-		PostMessageRequest: optional.NewInterface(traq.PostMessageRequest{
+func (r *Response) Send(content string) (*traq.Message, error) {
+	message, _, err := r.tc.Client.MessageApi.
+		PostMessage(r.tc.Auth, r.Message.ChannelID).
+		PostMessageRequest(traq.PostMessageRequest{
 			Content: content,
-			Embed:   true,
-		}),
-	})
+			Embed:   &embedTrue,
+		}).
+		Execute()
 	if err != nil {
 		log.Println(fmt.Errorf("failed to send a message: %w", err))
 
-		return traq.Message{}, err
+		return nil, err
 	}
 
 	return message, nil
 }
 
-func (r *Response) Reply(content string) (traq.Message, error) {
-	message, _, err := r.tc.Client.MessageApi.PostMessage(r.tc.Auth, r.Message.ChannelID, &traq.MessageApiPostMessageOpts{
-		PostMessageRequest: optional.NewInterface(traq.PostMessageRequest{
+func (r *Response) Reply(content string) (*traq.Message, error) {
+	message, _, err := r.tc.Client.MessageApi.
+		PostMessage(r.tc.Auth, r.Message.ChannelID).
+		PostMessageRequest(traq.PostMessageRequest{
 			Content: fmt.Sprintf("@%s %s", r.Message.User.Name, content),
-			Embed:   true,
-		}),
-	})
+			Embed:   &embedTrue,
+		}).
+		Execute()
 	if err != nil {
 		log.Println(fmt.Errorf("failed to reply a message: %w", err))
 
-		return traq.Message{}, err
+		return nil, err
 	}
 
 	return message, nil
@@ -200,7 +205,9 @@ func (r *Response) AddStamp(stampName string) error {
 		return fmt.Errorf("stamp \"%s\" not found", stampName)
 	}
 
-	_, err := r.tc.Client.MessageApi.AddMessageStamp(r.tc.Auth, r.Message.ID, sid, &traq.MessageApiAddMessageStampOpts{})
+	_, err := r.tc.Client.MessageApi.
+		AddMessageStamp(r.tc.Auth, r.Message.ID, sid).
+		Execute()
 	if err != nil {
 		log.Println(fmt.Errorf("failed to add a stamp: %w", err))
 
