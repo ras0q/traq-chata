@@ -28,8 +28,8 @@ type (
 		stamps            map[string]string
 
 		// Wrapper for traPtitech/go-traq
-		Client *traq.APIClient
-		Auth   context.Context
+		traqAPIClient *traq.APIClient
+		traqAPIAuth   context.Context
 	}
 
 	// Match pattern
@@ -81,8 +81,8 @@ func New(id string, uid string, at string, vt string) *TraqChat {
 		handlers:          traqbot.EventHandlers{},
 		matchers:          map[*regexp.Regexp]pattern{},
 		stamps:            stampsMap,
-		Client:            client,
-		Auth:              auth,
+		traqAPIClient:     client,
+		traqAPIAuth:       auth,
 	}
 
 	q.handlers.SetMessageCreatedHandler(func(payload *traqbot.MessageCreatedPayload) {
@@ -167,8 +167,8 @@ func (q *TraqChat) RespondF(re *regexp.Regexp, f MustResponseFunc) error {
 }
 
 func (r *Response) Send(content string) (*traq.Message, error) {
-	message, _, err := r.tc.Client.MessageApi.
-		PostMessage(r.tc.Auth, r.Message.ChannelID).
+	message, _, err := r.tc.traqAPIClient.MessageApi.
+		PostMessage(r.tc.traqAPIAuth, r.Message.ChannelID).
 		PostMessageRequest(traq.PostMessageRequest{
 			Content: content,
 			Embed:   &embedTrue,
@@ -184,8 +184,8 @@ func (r *Response) Send(content string) (*traq.Message, error) {
 }
 
 func (r *Response) Reply(content string) (*traq.Message, error) {
-	message, _, err := r.tc.Client.MessageApi.
-		PostMessage(r.tc.Auth, r.Message.ChannelID).
+	message, _, err := r.tc.traqAPIClient.MessageApi.
+		PostMessage(r.tc.traqAPIAuth, r.Message.ChannelID).
 		PostMessageRequest(traq.PostMessageRequest{
 			Content: fmt.Sprintf("@%s %s", r.Message.User.Name, content),
 			Embed:   &embedTrue,
@@ -206,8 +206,8 @@ func (r *Response) AddStamp(stampName string) error {
 		return fmt.Errorf("stamp \"%s\" not found", stampName)
 	}
 
-	_, err := r.tc.Client.MessageApi.
-		AddMessageStamp(r.tc.Auth, r.Message.ID, sid).
+	_, err := r.tc.traqAPIClient.MessageApi.
+		AddMessageStamp(r.tc.traqAPIAuth, r.Message.ID, sid).
 		Execute()
 	if err != nil {
 		log.Println(fmt.Errorf("failed to add a stamp: %w", err))
