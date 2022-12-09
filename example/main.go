@@ -5,7 +5,7 @@ import (
 	"os"
 	"regexp"
 
-	traqchat "github.com/Ras96/traq-chat"
+	traqchat "github.com/ras0q/traq-chat"
 )
 
 func main() {

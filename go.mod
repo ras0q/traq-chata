@@ -1,4 +1,4 @@
-module github.com/Ras96/traq-chat
+module github.com/ras0q/traq-chat
 
 go 1.17
 
